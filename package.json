@@ -1,6 +1,6 @@
 {
   "name": "node-isimulator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "use node.js to control iOS simulator , of course you can use it for automatically debugging webpage",
   "main": "index.js",
   "scripts": {
@@ -35,8 +35,7 @@
     "inquirer": "~0.9.0",
     "io-spin": "~0.1.2",
     "spm-log": "~0.1.3",
-    "thunkify": "~2.1.2",
-    "win-spawn": "~2.0.0"
+    "thunkify": "~2.1.2"
   },
   "devDependencies": {
     "istanbul": "*",

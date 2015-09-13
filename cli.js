@@ -11,7 +11,7 @@ var log = require('spm-log');
 var os = require('os');
 var tmp = os.tmpdir();
 var co = require('co');
-var IOSSim = require('./index').IOSSim;
+var IOSSim = require('./index');
 
 
 program
@@ -71,7 +71,6 @@ var options = {
   appPath: program.appPath || join(tmp, 'ns'),
   scheme: program.scheme || 'http://m.baidu.com'
 }
-
 
 var sim  = new IOSSim(options);
 

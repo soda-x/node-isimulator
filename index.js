@@ -11,22 +11,23 @@ require('colorful').colorful();
 var exec = require('co-exec');
 var log = require('spm-log');
 var sleep = require('co-sleep');
-var path = require('path');
 var fs = require('co-fs-extra');
 var spin = require('io-spin');
 var thunkify = require('thunkify');
 var Download = require('download');
+var path = require('path');
+var join = require('path').join;
+var os = require('os');
+var tmp = os.tmpdir();
 
-function  IOSSim(prefix, application, device, os, appPath, downloadURL, bundleId, scheme, appId) {
-  this.prefix = prefix || 'spider';
-  this.application = application || 'mobilesafari';
-  this.os = os;
-  this.device = device || 'iPhone-6';
-  this.appPath = appPath;
-  this.downloadURL = downloadURL;
-  this.bundleId = bundleId;
-  this.scheme = scheme;
-  this.appId = appId;
+function  IOSSim(options) {
+  this.prefix = options.prefix || 'ns';
+  this.application = options.application || 'mobilesafari';
+  this.os = options.os || '';
+  this.device = options.device || 'iPhone-6';
+  this.appPath = options.appPath || join(tmp, 'ns');
+  this.downloadURL = options.downloadURL || '';
+  this.scheme = options.scheme || 'http://m.google.com';
   this.sid = '';
 }
 
@@ -34,7 +35,7 @@ function  IOSSim(prefix, application, device, os, appPath, downloadURL, bundleId
 //  return yield  IOSSim(prefix, application, device, os).bind(instance);
 //});
 
-exports.IOSSim = IOSSim;
+module.exports = IOSSim;
 
 IOSSim.setup = function * (self){
   var runtime = yield self.getRuntime(self.os);
