@@ -11,6 +11,18 @@ Use node.js to control iOS simulator ,  of course you can use it for automatical
 $ npm install node-isimulator -g
 ```
 
+## Let your imagination run away , here are two showcases.
+
+* Debugging in simulator with mobilesafari
+
+![ns](http://pigcan.github.io/photo/open_in_safari.gif)
+
+
+* Debugging in simulator with your custom app
+
+![ns](http://pigcan.github.io/photo/open_in_custom_app.gif)
+
+
 ## Usage_1
 
 ```
@@ -35,7 +47,7 @@ $ npm install node-isimulator -g
 
 ```
   var co = require('co');
-  var sim = require('node-isulator');
+  var Sim = require('node-isulator');
   var options = {
     prefix: 'hello',
     application: 'mobilesafari',
@@ -45,7 +57,7 @@ $ npm install node-isimulator -g
     downloadURL: '',
     scheme: 'http://m.google.com'
   }
-  var sim  = new IOSSim(options);
+  var sim  = new Sim(options);
 
   co(sim.start(options.scheme, function(){
     //xxx
