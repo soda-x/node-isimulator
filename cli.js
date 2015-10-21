@@ -5,7 +5,6 @@
 require('colorful').colorful();
 
 var program = require('commander');
-var path = require('path');
 var join = require('path').join;
 var log = require('spm-log');
 var os = require('os');
@@ -37,12 +36,12 @@ if(program.simdoctor){
   var IOSChecker = require('./doctor').IOSChecker;
   var isMac = process.platform === 'darwin';
   if (!isMac) {
-    log.warn("iOS Checks cannot be run on Windows.");
+    log.warn('iOS Checks cannot be run on Windows.');
     console.log();
     process.exit(-1);
   }
   var iosChecker = new IOSChecker();
-  log.info("Running iOS Checks");
+  log.info('Running iOS Checks');
   console.log();
   co(function *(){
     try {
@@ -54,12 +53,11 @@ if(program.simdoctor){
       process.exit(-1);
     }
   }).then(function() {
-    console.log();
   }, function(err) {
-    log.error('error', err.message)
-  })
+    log.error('error', err.message);
+  });
 
-  return
+  return;
 }
 
 var options = {
@@ -70,15 +68,13 @@ var options = {
   downloadURL: program.downloadUrl || '',
   appPath: program.appPath || join(tmp, 'ns'),
   scheme: program.scheme || 'http://m.baidu.com'
-}
+};
 
 var sim  = new IOSSim(options);
 
 
 co(sim.start(options.scheme, function(){
-  
 
-  //console.log(package)
 })).then(function() {
 }, function(err) {
   log.error('error', err.message);

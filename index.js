@@ -29,6 +29,9 @@ function  IOSSim(options) {
   this.downloadURL = options.downloadURL || '';
   this.scheme = options.scheme || 'http://m.google.com';
   this.sid = '';
+  this.macVersion = '';
+  this.xcodeVersion = '';
+  this.xcodePath = '';
 }
 
 //exports.IOSSim =  co.wrap(function* (prefix, application, device, os, instance) {
@@ -37,19 +40,36 @@ function  IOSSim(options) {
 
 module.exports = IOSSim;
 
-IOSSim.setup = function * (self){
+IOSSim.setupOS = function * (self){
   var runtime = yield self.getRuntime(self.os);
   var os = self.os || runtime.match(/^com\.apple\.CoreSimulator\.SimRuntime\.iOS-(.+)$/im)[1];
   self.os = os;
-  return os;
+};
+
+IOSSim.setupEnv = function * (self){
+  var xcodePath = yield exec('xcode-select -p');
+  xcodePath = xcodePath.replace('\n','');
+
+  log.debug('XcodePath', xcodePath);
+  self.xcodePath = xcodePath;
+
+  var versionInfo = yield exec(join(xcodePath,'/usr/bin/xcodebuild') + ' -version');
+  var xcodeVersionInfo = versionInfo.match(/^.*Xcode (.+)$/im)[1];
+  var macVersion = yield exec('sw_vers -productVersion');
+  macVersion = macVersion.replace('\n','');
+
+  log.debug('Xcode', xcodeVersionInfo);
+  self.xcodeVersion = xcodeVersionInfo;
+
+  log.debug('Mac', macVersion);
+  self.macVersion = macVersion;
 };
 
 IOSSim.prototype.start = function * (url, cb) {
-  var os = yield IOSSim.setup(this);
-  var simulatorName = this.prefix + 'sim--' + this.device + '--' + os;
+  yield IOSSim.setupEnv(this);
+  yield IOSSim.setupOS(this);
+  var simulatorName = this.prefix + 'sim--' + this.device + '--' + this.os;
   yield this.launchSimulator(simulatorName);
-
-
 
   if(this.application === 'mobilesafari'){
     console.log('Loading the page....\n');
@@ -92,6 +112,20 @@ IOSSim.prototype.isAnyDeviceBooted = function * () {
   return [isAnyDeviceBooted, bootedDevices];
 };
 
+
+IOSSim.prototype.isCurrentSimulatorTheSimulatorNeededToOpen = function *() {
+  var res = yield  this.isAnyDeviceBooted();
+
+  //var isBooted = res[0];
+  var isTheSimulatorNeededToOpen = false;
+  var currentSid = this.sid;
+  for (var i = res[1].length - 1; i >= 0; i--) {
+    if (res[1][i].sid === currentSid) isTheSimulatorNeededToOpen = true;
+  }
+
+  return [res, isTheSimulatorNeededToOpen];
+};
+
 IOSSim.prototype.launchSimulator = function * (name) {
   var sid;
   var simulatorName = name || this.prefix + 'sim--' + this.device + '--' + this.os;
@@ -111,67 +145,79 @@ IOSSim.prototype.launchSimulator = function * (name) {
   }
   log.debug('info', 'Try to open simulator');
   this.sid = sid;
-  yield this.openSimulator(sid);
+  var res = yield this.isCurrentSimulatorTheSimulatorNeededToOpen();
+  if (!res[1]) {
+    yield this.killSimulator(res[0]);
+    yield this.openSimulator(sid);
+  } else {
+    console.log(('  \u2714  Successfully use the current simulator ' + sid).to.green.color);
+    log.debug('info', 'use the current opened simulator');
+  }
+ };
 
-
-  //(!APVER && isBooted) ? launchPortal(did) : launchSim(did, function () {
-  //  launchPortal(did);
-  //});
-};
-
-IOSSim.prototype.openSimulator = function * (sid, cb) {
+IOSSim.prototype.openSimulator = function * (sid) {
   try {
-
-    yield this.killSimulator();
-    log.debug('info', 'Finally xcrun instruments -w ' + sid);
-    // not sure why use blow command always gets err
-    yield exec('xcrun instruments -w ' + sid);
+    var xcodePath = this.xcodePath;
+    var appPath = xcodePath;
+    log.debug('launch simulator', 'Finally launch simulator');
+    if (this.macVersion.match('10.11') !== null || this.xcodeVersion.match('7.') !== null){
+      appPath = appPath + '/Applications/Simulator.app';
+    } else {
+      appPath = appPath + '/Applications/iOS Simulator.app';
+    }
+    yield exec('open ' + appPath + ' --args -CurrentDeviceUDID' + sid);
+    log.debug('open', 'open ' + appPath + ' --args -CurrentDeviceUDID' + sid);
     console.log();
     console.log(('  \u2714  Successfully launched the simulator ' + sid).to.green.color);
-    cb && cb();
   } catch (err) {
     console.log();
-    console.log(('  \u2714  Successfully launched the simulator ' + sid).to.green.color);
-    cb && cb();
-    log.debug('warn', 'Run xcrun instruments -w udid always got err');
-    //process.exit(-1);
+    console.log(('  \u2716  Exception: launch Simulator').to.red.color, err);
+    //log.debug('warn', 'Run xcrun instruments -w udid always got err');
+    process.exit(-1);
   }
 
   //downloadPortal(null, cb);
 };
 
-IOSSim.prototype.killSimulator = function * () {
+IOSSim.prototype.killSimulator = function * (bootedDevice) {
   try {
     log.debug('info', 'Try to open simulator first need to check is any booted devices, then check is any launched simulator app');
-    // 如此做的原因是, 很可能模拟器退出了但是模拟器的状态却为booted
-    // The reason why always need to check booted or launched is the simulator maybe booted while the simulator app is not launched
-    var res = yield  this.isAnyDeviceBooted();
-    var isBooted = res[0];
-    //var bootedDevice = isBooted ? res[1] : 0;
-    var grepOpenedSimulatorApp = yield exec('ps -ax | grep "iOS Simulator"');
+    
+    // var res = yield  this.isAnyDeviceBooted();
+
+    var isBooted = bootedDevice[0];
+
+
+    var grepOpenedSimulatorApp = yield exec('ps -ax | grep -E "iOS Simulator|Simulator"');
     var matchedApp = grepOpenedSimulatorApp.match(/^.+\/Applications\/Xcode.+((iOS\s+Simulator)|Simulator.+)$/igm);
 
     var isOpenedSimulatorApp =   matchedApp  && matchedApp.length >= 1 ? true : false;
 
     log.debug('info', 'Is any booted devices ' + isBooted + ' Is any launched simulator app ' + isOpenedSimulatorApp);
 
+
     if(isBooted){
       log.debug('info', 'Try to shutdown booted simulators');
       yield  exec('xcrun simctl shutdown booted');
     }
 
-    if(isOpenedSimulatorApp){
-      log.debug('info', 'Try to quit simulator app');
-      var macVersion = yield exec('sw_vers -productVersion');
-      if (macVersion.match('10.11') !== null){
-        log.debug('info', 'Mac os version is  10.11, use killall Simulator');
-        yield exec('killall "Simulator"');
+    if (isOpenedSimulatorApp) {
+      if (isBooted === false && isOpenedSimulatorApp === true) {
+        log.warn('warn', ':( your simulator needs some rest, please try several seconds later');
+        process.exit(-1);
       } else {
-        log.debug('info', 'Mac os version is under 10.11, use killall iOS Simulator');
-        yield exec('killall "iOS Simulator"');
+        log.debug('info', 'Try to quit simulator app');
+        if (this.macVersion.match('10.11') !== null || this.xcodeVersion.match('7.') !== null){
+          log.debug('info', 'use killall Simulator');
+          yield exec('killall "Simulator"');
+        } else {
+          log.debug('info', 'use killall iOS Simulator');
+          yield exec('killall "iOS Simulator"');
+        }
       }
-    }
 
+    }
+    
   } catch (err) {
     console.log();
     console.log(('  \u2716  Exception: kill Simulator').to.red.color);
