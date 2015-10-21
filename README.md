@@ -15,12 +15,7 @@ $ npm install node-isimulator -g
 
 * Debugging in simulator with mobilesafari
 
-![ns](http://pigcan.github.io/photo/open_in_safari.gif)
-
-
 * Debugging in simulator with your custom app
-
-![ns](http://pigcan.github.io/photo/open_in_custom_app.gif)
 
 
 ## Usage_1
