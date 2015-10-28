@@ -2,6 +2,11 @@
 
 ---
 
+ ## 0.1.4
+
+ - Bugfix docotor in os x 10.11
+ - Optimize codes about killl simulator
+
 ## 0.1.3
 
 - Support Xcode 7
