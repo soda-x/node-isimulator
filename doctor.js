@@ -38,6 +38,9 @@ IOSChecker.prototype.getMacOSXVersion = function * () {
     } else if ((version.match('10.10') !== null) || (version.match('10.10.1') !== null)) {
       this.osVersion = '10.10';
       console.log('  \u2714  '.to.green.color,'Mac OS X 10.10 is installed.');
+    } else if (version.match('10.11') !== null) {
+      this.osVersion = '10.11';
+      console.log('  \u2714  '.to.green.color,'Mac OS X 10.11 is installed.');
     } else {
       console.log('  \u2716   Could not detect Mac OS X Version.'.to.red.color);
       process.exit(-1);

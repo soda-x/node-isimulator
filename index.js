@@ -21,6 +21,7 @@ var os = require('os');
 var tmp = os.tmpdir();
 
 function  IOSSim(options) {
+  log.config(options);
   this.prefix = options.prefix || 'ns';
   this.application = options.application || 'mobilesafari';
   this.os = options.os || '';
@@ -147,7 +148,7 @@ IOSSim.prototype.launchSimulator = function * (name) {
   this.sid = sid;
   var res = yield this.isCurrentSimulatorTheSimulatorNeededToOpen();
   if (!res[1]) {
-    yield this.killSimulator(res[0]);
+    yield this.killSimulator();
     yield this.openSimulator(sid);
   } else {
     console.log(('  \u2714  Successfully use the current simulator ' + sid).to.green.color);
@@ -165,8 +166,8 @@ IOSSim.prototype.openSimulator = function * (sid) {
     } else {
       appPath = appPath + '/Applications/iOS Simulator.app';
     }
-    yield exec('open ' + appPath + ' --args -CurrentDeviceUDID' + sid);
-    log.debug('open', 'open ' + appPath + ' --args -CurrentDeviceUDID' + sid);
+    yield exec('open ' + appPath + ' --args -CurrentDeviceUDID ' + sid);
+    log.debug('open', 'open ' + appPath + ' --args -CurrentDeviceUDID ' + sid);
     console.log();
     console.log(('  \u2714  Successfully launched the simulator ' + sid).to.green.color);
   } catch (err) {
@@ -179,13 +180,13 @@ IOSSim.prototype.openSimulator = function * (sid) {
   //downloadPortal(null, cb);
 };
 
-IOSSim.prototype.killSimulator = function * (bootedDevice) {
+IOSSim.prototype.killSimulator = function * () {
   try {
-    log.debug('info', 'Try to open simulator first need to check is any booted devices, then check is any launched simulator app');
+    log.debug('info', 'Try to open simulator first need to check is any launched simulator app');
     
     // var res = yield  this.isAnyDeviceBooted();
 
-    var isBooted = bootedDevice[0];
+    //var isBooted = bootedDevice[0];
 
 
     var grepOpenedSimulatorApp = yield exec('ps -ax | grep -E "iOS Simulator|Simulator"');
@@ -193,19 +194,19 @@ IOSSim.prototype.killSimulator = function * (bootedDevice) {
 
     var isOpenedSimulatorApp =   matchedApp  && matchedApp.length >= 1 ? true : false;
 
-    log.debug('info', 'Is any booted devices ' + isBooted + ' Is any launched simulator app ' + isOpenedSimulatorApp);
+    //log.debug('info', 'Is any booted devices ' + isBooted + ' Is any launched simulator app ' + isOpenedSimulatorApp);
+    log.debug('info', ' Is any launched simulator app ' + isOpenedSimulatorApp);
 
-
-    if(isBooted){
-      log.debug('info', 'Try to shutdown booted simulators');
-      yield  exec('xcrun simctl shutdown booted');
-    }
+    //if(isBooted){
+    //  log.debug('info', 'Try to shutdown booted simulators');
+    //  yield  exec('xcrun simctl shutdown booted');
+    //}
 
     if (isOpenedSimulatorApp) {
-      if (isBooted === false && isOpenedSimulatorApp === true) {
-        log.warn('warn', ':( your simulator needs some rest, please try several seconds later');
-        process.exit(-1);
-      } else {
+      //if (isBooted === false && isOpenedSimulatorApp === true) {
+      //  log.warn('warn', ':( your simulator needs some rest, please try several seconds later');
+      //  process.exit(-1);
+      //} else {
         log.debug('info', 'Try to quit simulator app');
         if (this.macVersion.match('10.11') !== null || this.xcodeVersion.match('7.') !== null){
           log.debug('info', 'use killall Simulator');
@@ -214,7 +215,7 @@ IOSSim.prototype.killSimulator = function * (bootedDevice) {
           log.debug('info', 'use killall iOS Simulator');
           yield exec('killall "iOS Simulator"');
         }
-      }
+      //}
 
     }
     
@@ -371,10 +372,7 @@ var findAppInSim = function * (sid, appName){
 };
 
 IOSSim.prototype.installAPP = function * (sid, appPath, appName) {
-  //if (IS_ROOT) {
-  //  console.log('ERROR: 请勿使用sudo命令执行！\r\n'.red);
-  //  return;
-  //}
+
   log.debug('info', '\nsid: ' + sid + '\nappPath: ' + appPath + '\nappName: ' + appName);
   var isInstalledApp = (yield findAppInSim(sid, appName)).length > 0 ? true : false;
   if (!isInstalledApp){
@@ -401,7 +399,7 @@ IOSSim.prototype.launchAPP = function * () {
     console.log(('  \u2714  All done !').to.green.color);
   } catch (err) {
     console.log();
-    log.debug('warn', '\u2716  Exception: launch app failed');
+    console.log('\u2716  Exception: launch app failed'.to.red.color);
     log.debug('error', err + '\n' + err.stack);
   }
 };
