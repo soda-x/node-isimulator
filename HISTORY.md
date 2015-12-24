@@ -2,6 +2,10 @@
 
 ---
 
+ ## 0.1.5
+
+ - Use pkill to kill simulator
+
  ## 0.1.4
 
  - Bugfix docotor in os x 10.11
