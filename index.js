@@ -154,7 +154,7 @@ IOSSim.prototype.launchSimulator = function * (name) {
     console.log(('  \u2714  Successfully use the current simulator ' + sid).to.green.color);
     log.debug('info', 'use the current opened simulator');
   }
- };
+};
 
 IOSSim.prototype.openSimulator = function * (sid) {
   try {
@@ -180,10 +180,31 @@ IOSSim.prototype.openSimulator = function * (sid) {
   //downloadPortal(null, cb);
 };
 
+IOSSim.prototype.endAllSimulatorDaemons = function * () {
+  var patterns = ['com.apple.iphonesimulator', 'com.apple.CoreSimulator'];
+  for(var pattern in patterns) {
+    var launchCtlCommand = 'launchctl list | grep ' + pattern + ' | cut -f 3 | xargs -n 1 launchctl';
+    var stopCommand = launchCtlCommand + ' stop';
+    var removeCommand = launchCtlCommand + ' remove';
+    console.log(stopCommand, removeCommand);
+    try {
+      yield exec(launchCtlCommand);
+    } catch(err) {
+      log.warn('Could not stop ' + pattern + ' daemons, carrying on anyway!');
+    }
+    try {
+      yield exec(removeCommand);
+    } catch(err) {
+      log.warn('Could not remove ' + pattern + ' daemons, carrying on anyway!');
+    }
+  }
+};
+
 IOSSim.prototype.killSimulator = function * () {
   try {
+    //yield this.endAllSimulatorDaemons();
     log.debug('info', 'Try to open simulator first need to check is any launched simulator app');
-    
+
     // var res = yield  this.isAnyDeviceBooted();
 
     //var isBooted = bootedDevice[0];
@@ -191,7 +212,6 @@ IOSSim.prototype.killSimulator = function * () {
 
     var grepOpenedSimulatorApp = yield exec('ps -ax | grep -E "iOS Simulator|Simulator"');
     var matchedApp = grepOpenedSimulatorApp.match(/^.+\/Applications\/Xcode.+((iOS\s+Simulator)|Simulator.+)$/igm);
-
     var isOpenedSimulatorApp =   matchedApp  && matchedApp.length >= 1 ? true : false;
 
     //log.debug('info', 'Is any booted devices ' + isBooted + ' Is any launched simulator app ' + isOpenedSimulatorApp);
@@ -207,18 +227,18 @@ IOSSim.prototype.killSimulator = function * () {
       //  log.warn('warn', ':( your simulator needs some rest, please try several seconds later');
       //  process.exit(-1);
       //} else {
-        log.debug('info', 'Try to quit simulator app');
-        if (this.macVersion.match('10.11') !== null || this.xcodeVersion.match('7.') !== null){
-          log.debug('info', 'use killall Simulator');
-          yield exec('killall "Simulator"');
-        } else {
-          log.debug('info', 'use killall iOS Simulator');
-          yield exec('killall "iOS Simulator"');
-        }
+      log.debug('info', 'Try to quit simulator app');
+      if (this.macVersion.match('10.11') !== null || this.xcodeVersion.match('7.') !== null){
+        log.debug('info', 'use killall Simulator');
+        yield exec('pkill -9 -f "Simulator"');
+      } else {
+        log.debug('info', 'use killall iOS Simulator');
+        yield exec('pkill -9 -f  "iOS Simulator"');
+      }
       //}
 
     }
-    
+
   } catch (err) {
     console.log();
     console.log(('  \u2716  Exception: kill Simulator').to.red.color);
