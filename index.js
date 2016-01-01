@@ -21,7 +21,8 @@ var os = require('os');
 var tmp = os.tmpdir();
 
 function  IOSSim(options) {
-  log.config(options);
+  options || (options = {});
+  options.verbose && log.config(options);
   this.prefix = options.prefix || 'ns';
   this.application = options.application || 'mobilesafari';
   this.os = options.os || '';

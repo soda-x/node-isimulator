@@ -2,14 +2,18 @@
 
 ---
 
- ## 0.1.5
+## 0.1.6
 
- - Use pkill to kill simulator
+- Fix bugs
 
- ## 0.1.4
+## 0.1.5
 
- - Bugfix docotor in os x 10.11
- - Optimize codes about killl simulator
+- Use pkill to kill simulator
+
+## 0.1.4
+
+- Bugfix docotor in os x 10.11
+- Optimize codes about killl simulator
 
 ## 0.1.3
 
