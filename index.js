@@ -145,6 +145,7 @@ IOSSim.prototype.launchSimulator = function * (name) {
     log.debug('info', 'Have not been installed a simulator named ' + simulatorName + ' then try to create it');
     sid = yield this.createSimulator();
   }
+  yield sleep(1000);
   log.debug('info', 'Try to open simulator');
   this.sid = sid;
   var res = yield this.isCurrentSimulatorTheSimulatorNeededToOpen();
@@ -198,6 +199,17 @@ IOSSim.prototype.endAllSimulatorDaemons = function * () {
     } catch(err) {
       log.warn('Could not remove ' + pattern + ' daemons, carrying on anyway!');
     }
+  }
+};
+
+IOSSim.prototype.killAll = function * () {
+  try {
+    yield exec('ps aux | grep Simulator.app | grep -v grep | cut -b16-24 | xargs kill');
+  } catch(err) {
+    console.log();
+    console.log(('  \u2716  Exception: kill Simulator').to.red.color);
+    log.debug('error', err + '\n' + err.stack);
+    process.exit(-1);
   }
 };
 
