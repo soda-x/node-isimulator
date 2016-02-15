@@ -2,6 +2,10 @@
 
 ---
 
+ ## 0.1.7
+
+ - chore: fix can not open specify simulator because its status is creating, add method killAll
+
 ## 0.1.6
 
 - Fix bugs
