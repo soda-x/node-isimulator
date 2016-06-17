@@ -1,0 +1,17 @@
+{
+  "parser": "babel-eslint",
+  "extends": "eslint-config-airbnb/base",
+  "rules": {
+    "no-console": [0],
+    "no-new": [0],
+    "func-names": [0]
+  },
+  "ecmaFeatures": {
+    "generators": 1,
+    "experimentalObjectRestSpread": true
+  },
+  "env": {
+    "node": true,
+    "mocha": true
+  }
+}
