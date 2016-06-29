@@ -1,155 +1,198 @@
+import { getDevices } from 'node-simctl';
+import async from 'async';
+import { parseFile as rawParsePlist } from 'bplist-parser';
 import exec from 'sync-exec';
-import log from 'spm-log';
 
-import { join } from 'path';
+import download from 'download';
+import chalk from 'chalk';
 
-const runExec = (cmd, fname, cb) => {
-  const { stdout, stderr } = exec(cmd);
-  if (stderr) {
-    log.error('simulator:error', `error by running ${cmd} ${stderr}, use doctor to check it out`);
+export const chalkError = chalk.red;
+export const chalkInfo = chalk.green;
+export const chalkWarning = chalk.yellow;
+export const chalkProcessing = chalk.blue;
 
-    process.exit(-1);
+import { join, basename } from 'path';
+import { statSync } from 'fs';
+import { tmpdir } from 'os';
+import { parse } from 'url';
+
+export function isExistedAFile(path) {
+  let isDirectory;
+  try {
+    if (statSync(path).isDirectory()) {
+      isDirectory = true;
+    } else {
+      isDirectory = false;
+    }
+  } catch (err) {
+    isDirectory = false;
   }
-  if (stdout) {
-    if (!cb) {
-      return '';
-    } 
 
-    return cb(stdout);
-  } else {
-    log.error(`simulator:${fname}`, `${cmd} have no stdout`);
+  return isDirectory;
+}
 
-    process.exit(-1);
-  }
-};
+export function isURL(string) {
+  const matcher = /^(?:\w+:)?\/\/([^\s\.]+\.\S{2}|localhost[\:?\d]*)\S*$/;
 
-export function getXcodePath() {
-  const cmd = 'xcode-select -p';
+  return matcher.test(string);
+}
 
-  return runExec(cmd, 'getXcodePath', (stdout) => {
-    return stdout.replace('\n', '');
+// return local path ex: /tmpDir/simulator/xxxxx
+export async function downAppFromUrl(url) {
+  // try to cache
+  const tmpDir = tmpdir();
+  // /ftp/x/y/z.app.zip => ftp_x_y_z.app.zip
+  let pathname = parse(url).pathname;
+  const filename = basename(pathname);
+  pathname = pathname.slice(1).replace(/\//g, '_');
+  const appDownloadLocalPathname = join(tmpDir, 'simulator', pathname);
+
+  return new Promise((resolve, reject) => {
+    if (!isExistedAFile(appDownloadLocalPathname)) {
+      console.log(chalkInfo(`node-isimulator: try to downloaded ${filename}`));
+      console.log(chalkProcessing(`node-isimulator: downloading ${filename} ...`));
+      const downloadOpts = {
+        extract: true,
+        strip: 0,
+        mode: '755',
+      };
+      // download then install from local path
+      download(url, appDownloadLocalPathname, downloadOpts).then((outputs) => {
+        console.log(chalkInfo(`node-isimulator: success downloaded ${filename}`));
+        const decomporessName = outputs[0].path;
+        resolve(join(appDownloadLocalPathname, decomporessName));
+      }, (err) => {
+        console.error(chalkError(`node-isimulator: failed to download ${filename} ${err}`));
+        reject(`failed to download ${filename} ${err}`);
+      });
+    } else {
+      const cmd = `ls ${appDownloadLocalPathname}`;
+      const result = exec(cmd);
+      if (result.stderr) {
+        reject(new Error(`ls ${appDownloadLocalPathname}`));
+
+        return;
+      }
+      if (result.stdout === '') {
+        console.log(chalkWarning(`node-isimulator: downloaded ${filename} is broken, try again.`));
+        reject(new Error(`ls ${appDownloadLocalPathname}`));
+        exec(`rm -rf ${appDownloadLocalPathname}`);
+
+        return;
+      }
+      console.log(chalkInfo(`node-isimulator: already downloaded ${filename}`));
+      const decompressFilename = result.stdout.trim().split('\n')[0];
+      resolve(join(appDownloadLocalPathname, decompressFilename, '/'));
+    }
   });
 }
 
-export function getXcodeVersion(xcodePath) {
-  const pathOfXcode = xcodePath || getXcodePath();
-  const xcodebuildPath = join(pathOfXcode, '/usr/bin/xcodebuild');
-  const cmd = `${xcodebuildPath} -version`;
+// {
+//   'C09B34E5-7DCB-442E-B79C-AB6BC0357417': {
+//     name: 'iPhone 4s',
+//     sdk: '9.2'
+//     state: 'Booted',
+//   },
+// }
+export async function getBootedDeviceString() {
+  const devices = await getDevices();
 
-  return runExec(cmd, 'getXcodeVersion', (stdout) => {
-    return stdout.replace('\n', '').match(/^.*Xcode (.+)$/im)[1];;
-  });
-}
-
-export function getMacVersion() {
-  const cmd = 'sw_vers -productVersion';
-
-  return runExec(cmd, 'getMacVersion', (stdout) => {
-    return stdout.replace('\n', '');
-  });
-}
-
-export function getRuntime(version) {
-  const cmd = 'xcrun simctl list runtimes';
-
-  return runExec(cmd, 'getRuntime', (stdout) => {
-    let result = {
-      runtimes: [],
-      runtime: '',
-    };
-    result = stdout.split('\n').reduce((prevResult, runtime) => {
-      // only use available and iOS runtime
-      if (!/unavailable/i.test(runtime) && /iOS/i.test(runtime)) {
-        if (version) {
-          const regx = new RegExp(version, 'i');
-          if (regx.test(runtime)) {
-            prevResult.runtime = runtime.match(/\((com\.apple.+)\)/i)[1];
-          }
-        }
-        prevResult.runtimes.push(runtime);
+  return Object.keys(devices).reduce((bootedList, sdk) => {
+    const bootedDevices = devices[sdk].reduce((preBootedDevice, deviceString) => {
+      const _deviceString = deviceString;
+      const boot = {};
+      if (_deviceString.state === 'Booted') {
+        _deviceString.sdk = sdk;
+        boot[`${_deviceString.udid}`] = { ...{}, ..._deviceString };
       }
 
-      return prevResult;
-    }, result);
-    // if not exist specified runtime then exit
-    if (!result.runtime && version) {
-      log.error('simulator:error', `missed iOS ${version} SDK, pre-install this SDK by Xcode`);
+      return { ...preBootedDevice, ...boot };
+    }, {});
 
-      process.exit(-1);
-    }
-    else if (!version)  {
-      // not specified then use latest runtime
-      const latestRuntime = result.runtimes[result.runtimes.length - 1];
-      result.runtime = latestRuntime.match(/\((com\.apple.+)\)/i)[1];
-    }
+    return { ...bootedList, ...bootedDevices };
+  }, {});
+}
 
-    return result.runtime;
+const parsePlist = file => new Promise((resolve, reject) => {
+  rawParsePlist(file, (err, obj) => {
+    if (err) {
+      reject(new Error(`Unable to parse Info.plist: ${err}`));
+    }
+    resolve(obj);
   });
-};
+});
 
-export function getOS(os) {
-  let  osHandled = os;
-  // if specified 
-  if (osHandled) {
-    if (osHandled.indexOf('.') > -1) {
-       osHandled = os.replace('.', '-')
+export async function isInstalledAppNamed(udid, bundleId) {
+  const cmd = `find ~/Library/Developer/CoreSimulator/Devices/${udid}/data/Containers/Bundle/Application/ -d 3 -iname Info.plist`;
+  const result = exec(cmd);
+
+  return new Promise((resolve, reject) => {
+    if (result.stderr) {
+      reject(new Error(`Unable to exec find Info.plist: ${result.stderr}`));
+
+      return;
     }
-    const runtime = getRuntime(osHandled);
-    if (!runtime) {
-      log.error('simulator:error', `missed iOS ${os} SDK, pre-install this SDK by Xcode`);
+    if (result.stdout === '') {
+      resolve(false);
 
-      process.exit(-1);
-    }    
-  } else {
-    // get latest sdk version
-    osHandled = getRuntime().match(/^com\.apple\.CoreSimulator\.SimRuntime\.iOS-(.+)$/im)[1];
-  }
-
-
-  return osHandled;
-};
-
-export function findSimulators(prefix, simulatorName) {
-  const cmd = 'xcrun simctl list devices';
-  
-  return runExec(cmd, 'findSimulators', (stdout) => {
-    let matchedSims;
-    let regx = new RegExp(`${prefix}sim--.*?--.*?$`, 'igm');
-    if(simulatorName && regx.test(simulatorName)){
-      regx = new RegExp(`${simulatorName}.*?$`, 'igm');
+      return;
     }
-    matchedSims = stdout.match(regx);
-    if (matchedSims) {
-      const itemRegx = new RegExp(`^(${prefix}sim--(.*?)--(.*?))\\s+\\((.*?)\\)\\s+\\((.*?)\\)$`, 'i');
-      matchedSims = matchedSims.reduce((prevMatched, simulator) => {
-        const info = simulator.match(itemRegx);
-        const name = info[1];
-        const device = info[2];
-        const os = info[3];
-        const sid = info[4];
-        const status = info[5];
-        prevMatched.push(
-          {
-            name,
-            device,
-            os,
-            sid,
-            status,
-          }
-        );
-      }, []);
-    } else {
-      matchedSims = [];
-    }
+    async.some(result.stdout.trim().split('\n'), async (i, cb) => {
+      let listObj;
+      try {
+        listObj = await parsePlist(i);
+      } catch (err) {
+        reject(err);
 
-    return matchedSims;
-  });
-};
-
-export function createSimulator(prefix, device, os, runtime) {
-  const cmd = `xcrun simctl create ${prefix}sim--${device}--${os} com.apple.CoreSimulator.SimDeviceType.${device} ${runtime}`;
-
-  return runExec(cmd, (stdout) => {
-    return stdout.replace('\n', '');
+        return;
+      }
+      if (listObj[0].CFBundleIdentifier === bundleId) {
+        cb(null, true);
+      } else {
+        cb(null, false);
+      }
+    }, (err, rst) => {
+      if (err) reject(err);
+      resolve(rst);
+    });
   });
 }
+
+export async function getLatestSDK() {
+  const devices = await getDevices();
+
+  return Object.keys(devices).sort().reverse()[0];
+}
+
+export async function getUdidBySimName(simName) {
+  const devices = await getDevices();
+
+  return Object.keys(devices).reduce((matchedList, sdk) => {
+    const mDevices = devices[sdk].reduce((preMatchedDevice, deviceString) => {
+      if (deviceString.name === simName) {
+        preMatchedDevice.push(deviceString.udid);
+      }
+
+      return preMatchedDevice;
+    }, []);
+
+    return matchedList.concat(mDevices);
+  }, []);
+}
+
+export {
+  getSimulator,
+  killAllSimulators,
+  endAllSimulatorDaemons,
+} from 'appium-ios-simulator';
+
+export {
+  removeApp,
+  createDevice,
+  deleteDevice,
+  eraseDevice,
+  getDevices,
+  openUrl,
+  launch,
+  installApp,
+} from 'node-simctl';
