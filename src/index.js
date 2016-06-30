@@ -108,7 +108,7 @@ const start = async function start(options) {
       }
     }
 
-    await open(udid, opts.scheme);
+    opts.scheme && await open(udid, opts.scheme);
   } catch (e) {
     console.error(chalkError(`node-isimulator: failed ${e}`));
   }

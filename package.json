@@ -1,7 +1,7 @@
 {
   "name": "node-isimulator",
   "version": "0.1.7",
-  "description": "use node.js to control iOS simulator , of course you can use it for automatically debugging webpage",
+  "description": "use node.js to control iOS simulator",
   "main": "./lib/index.js",
   "scripts": {
     "compile": "rm -rf lib && babel -d lib src",
@@ -25,9 +25,6 @@
     "url": "https://github.com/pigcan/node-isimulator/issues"
   },
   "homepage": "https://github.com/pigcan/node-isimulator",
-  "bin": {
-    "ns": "cli.js"
-  },
   "dependencies": {
     "appium-ios-simulator": "^1.7.0",
     "async": "^2.0.0-rc.6",
