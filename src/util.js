@@ -16,7 +16,7 @@ import { statSync } from 'fs';
 import { tmpdir } from 'os';
 import { parse } from 'url';
 
-export function isExistedAFile(path) {
+export function isExistedADir(path) {
   let isDirectory;
   try {
     if (statSync(path).isDirectory()) {
@@ -48,7 +48,7 @@ export async function downAppFromUrl(url) {
   const appDownloadLocalPathname = join(tmpDir, 'simulator', pathname);
 
   return new Promise((resolve, reject) => {
-    if (!isExistedAFile(appDownloadLocalPathname)) {
+    if (!isExistedADir(appDownloadLocalPathname)) {
       console.log(chalkInfo(`node-isimulator: try to downloaded ${filename}`));
       console.log(chalkProcessing(`node-isimulator: downloading ${filename} ...`));
       const downloadOpts = {
@@ -76,7 +76,8 @@ export async function downAppFromUrl(url) {
       if (result.stdout === '') {
         console.log(chalkWarning(`node-isimulator: downloaded ${filename} is broken, try again.`));
         reject(new Error(`ls ${appDownloadLocalPathname}`));
-        exec(`rm -rf ${appDownloadLocalPathname}`);
+        const rmDir = join(appDownloadLocalPathname, '../');
+        exec(`rm -rf ${rmDir}`);
 
         return;
       }
@@ -190,7 +191,6 @@ export {
   removeApp,
   createDevice,
   deleteDevice,
-  eraseDevice,
   getDevices,
   openUrl,
   launch,

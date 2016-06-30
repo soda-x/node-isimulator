@@ -36,6 +36,7 @@ export async function installAppFromLocalOrUrl(udid, appPath) {
     if (isURL(path)) {
       finalInstallPath = await downAppFromUrl(path);
     }
+    console.log(chalkInfo(`node-isimulator: intall app from ${finalInstallPath}.`));
     await installApp(udid, finalInstallPath);
   } catch (err) {
     throw new Error(err);
@@ -108,9 +109,14 @@ const start = async function start(options) {
       }
     }
 
-    opts.scheme && await open(udid, opts.scheme);
+    if (opts.scheme) {
+      await open(udid, opts.scheme);
+    }
+
+    return udid;
   } catch (e) {
     console.error(chalkError(`node-isimulator: failed ${e}`));
+    throw new Error(e);
   }
 };
 
