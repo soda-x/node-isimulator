@@ -1,10 +1,14 @@
 {
   "name": "node-isimulator",
   "version": "0.1.7",
-  "description": "use node.js to control iOS simulator , of course you can use it for automatically debugging webpage",
-  "main": "index.js",
+  "description": "use node.js to control iOS simulator",
+  "main": "./lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "rm -rf lib && babel -d lib src",
+    "compile:watch": "npm run compile -- --watch",
+    "lint": "eslint src test",
+    "test": "npm install && $(npm bin)/babel-node $(npm bin)/babel-istanbul cover $(npm bin)/_mocha --  --no-timeouts",
+    "coveralls": "cat ./coverage/lcov.info | coveralls"
   },
   "repository": {
     "type": "git",
@@ -21,27 +25,31 @@
     "url": "https://github.com/pigcan/node-isimulator/issues"
   },
   "homepage": "https://github.com/pigcan/node-isimulator",
-  "bin": {
-     "ns": "cli.js"
-  },
   "dependencies": {
-    "co": "~4.6.0",
-    "co-exec": "~1.1.0",
-    "co-fs-extra": "~1.1.0",
-    "co-sleep": "~0.0.1",
-    "colorful": "~2.1.0",
-    "commander": "~2.8.1",
-    "download": "~4.2.0",
-    "inquirer": "~0.9.0",
-    "io-spin": "~0.1.2",
-    "spm-log": "~0.1.3",
-    "thunkify": "~2.1.2"
+    "appium-ios-simulator": "^1.7.0",
+    "async": "^2.0.0-rc.6",
+    "bplist-parser": "^0.1.1",
+    "chalk": "^1.1.3",
+    "download": "^5.0.2",
+    "node-simctl": "^3.4.2",
+    "sync-exec": "^0.6.2"
   },
   "devDependencies": {
-    "istanbul": "*",
-    "jshint": "*",
-    "mocha": "*",
-    "request": "~2.40.0",
-    "should": "*"
+    "babel-cli": "^6.10.1",
+    "babel-core": "^6.10.4",
+    "babel-eslint": "^6.1.0",
+    "babel-istanbul": "^0.11.0",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-plugin-transform-runtime": "^6.9.0",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-stage-0": "^6.5.0",
+    "babel-runtime": "^6.9.2",
+    "coveralls": "^2.11.9",
+    "eslint": "^2.7.0",
+    "eslint-config-airbnb": "^6.2.0",
+    "expect.js": "^0.3.1",
+    "mocha": "^2.5.3",
+    "rimraf": "^2.5.2",
+    "sample-apps": "^2.0.4"
   }
 }
