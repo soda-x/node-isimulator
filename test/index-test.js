@@ -17,24 +17,16 @@ describe('node-isimulator - util without sim', () => {
     done();
   });
 
-  it('util - isURL - com.x.x should return false', async done => {
-    try {
-      const isurl = await simUtil.isURL('com.x.x');
-      expect(isurl).to.be(false);
-      done();
-    } catch (e) {
-      done(e);
-    }
+  it('util - isURL - com.x.x should return false', done => {
+    const isurl = simUtil.isURL('com.x.x');
+    expect(isurl).to.be(false);
+    done();
   });
 
-  it('util - isURL - http://x.x.x should return true', async done => {
-    try {
-      const isurl = await simUtil.isURL('http://x.x.x');
-      expect(isurl).to.be(true);
-      done();
-    } catch (e) {
-      done(e);
-    }
+  it('util - isURL - http://x.x.x should return true', done => {
+    const isurl = simUtil.isURL('http://x.x.x');
+    expect(isurl).to.be(true);
+    done();
   });
 
   it('util - getLatestSDK - should return a number', async done => {

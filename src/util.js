@@ -1,5 +1,5 @@
 import { getDevices } from 'node-simctl';
-import async from 'async';
+import asyncjs from 'async';
 import { parseFile as rawParsePlist } from 'bplist-parser';
 import exec from 'sync-exec';
 
@@ -138,7 +138,7 @@ export async function isInstalledAppNamed(udid, bundleId) {
 
       return;
     }
-    async.some(result.stdout.trim().split('\n'), async (i, cb) => {
+    asyncjs.some(result.stdout.trim().split('\n'), async (i, cb) => {
       let listObj;
       try {
         listObj = await parsePlist(i);
