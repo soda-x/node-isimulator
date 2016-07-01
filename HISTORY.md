@@ -1,6 +1,11 @@
  History
 
 ---
+
+## 1.0.2
+
+- fix: npm3 problem(Cannot find module 'babel-runtime/helpers/asyncToGenerator'), make babel-runtime as dependencies not dev
+
 ## 1.0.1
 
 - fix readme
