@@ -2,9 +2,15 @@
 
 ---
 
- ## 0.1.7
+## 1.0.0
 
- - chore: fix can not open specify simulator because its status is creating, add method killAll
+- refator
+- more test cases
+- remove bin and doctor
+
+## 0.1.7
+
+- chore: fix can not open specify simulator because its status is creating, add method killAll
 
 ## 0.1.6
 
