@@ -39,19 +39,29 @@ await start(options);
 ```
 
 `prefix`: prefix of simulator name, e.g. ${prefix}sim--${device}-${sdk} => nssim--iPhone-6--9-2 
+
 `sdk`: runtime version, defualt latest 
+
 `device`: device type, defualt iPhone 6. e.g. iPhone 5s / iPhone 6s Plus
+
 `application`: device should open which application, defualt mobilesafari. e.g. yourAppName
+
 `bundleId`: application bundleId
+
 `downloadURL`: application's path, it could be a url or relative/absolute path.
+
 `scheme`: application's scheme. e.g. http://domain.com / taobao://xxxx / alipay://xxxx
 
 ### simUtil - simulator util object
 
 `simUtil.chalkError`: eroor log util. e.g. console.log(simUtil.chalkError('error'));
+
 `simUtil.chalkInfo`: info log util. e.g. console.log(simUtil.chalkInfo('info'));
+
 `simUtil.chalkWarning`: warning log util. e.g. console.log(simUtil.chalkWarning('warning'));
+
 `simUtil.chalkProcessing`: processing log util. e.g. console.log(simUtil.chalkProcessing('process'));
+
 
 -----
 
