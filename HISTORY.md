@@ -2,6 +2,10 @@
 
 ---
 
+## 1.0.3
+
+- fix: typo
+
 ## 1.0.2
 
 - fix: npm3 problem(Cannot find module 'babel-runtime/helpers/asyncToGenerator'), make babel-runtime as dependencies not dev
