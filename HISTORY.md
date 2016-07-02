@@ -2,6 +2,10 @@
 
 ---
 
+## 1.0.4
+
+- enhancement: sheme
+
 ## 1.0.3
 
 - fix: typo

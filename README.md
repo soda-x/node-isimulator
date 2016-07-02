@@ -67,7 +67,9 @@ await start(options);
 
 `simUtil.isExistedADir(string)`: is existed a dir named ${name}. e.g. simUtil.isExistedADir('xx'), return true or false.
 
-`simUtil.isURL(string)`: is url or not. return true or false.
+`simUtil.isURL(string)`: is url or not. return true or false. e.g. http://m.x.com
+
+`simUtil.isScheme(string)`: is scheme or not. return true or false. tb://xxxx/xxxx
 
 `simUtil.downAppFromUrl(url)`: `async func` download `zip` file from internet then decompress in local tmp path and return the local tmp path.
 
