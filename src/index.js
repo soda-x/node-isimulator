@@ -61,7 +61,7 @@ const normalizeOpts = async options => {
   sdk = sdk.indexOf('-') > -1 ? sdk.replace(/\-/g, '.') : sdk;
   opts.sdk = sdk;
   let device = opts.device || 'iPhone 6';
-  device = device.indexOf('-') > -1 ? sdk.replace(/\-/g, ' ') : device;
+  device = device.indexOf('-') > -1 ? device.replace(/\-/g, ' ') : device;
   opts.device = device;
 
   return opts;
