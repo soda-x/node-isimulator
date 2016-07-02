@@ -29,6 +29,12 @@ describe('node-isimulator - util without sim', () => {
     done();
   });
 
+  it('util - isScheme - tb://xxxx/xxx should return true', done => {
+    const isScheme = simUtil.isScheme('tb://xxxx/xxx');
+    expect(isScheme).to.be(true);
+    done();
+  });
+
   it('util - getLatestSDK - should return a number', async done => {
     try {
       const sdk = await simUtil.getLatestSDK();

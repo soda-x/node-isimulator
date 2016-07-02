@@ -37,6 +37,13 @@ export function isURL(string) {
   return matcher.test(string);
 }
 
+// e.g. tb://xxxx/xxx/?xxx is true
+export function isScheme(string) {
+  const matcher = /^(?:\w+:)?\/\/([^\s\.]+[\:?\d]*)\S*$/;
+
+  return matcher.test(string);
+}
+
 // return local path ex: /tmpDir/simulator/xxxxx
 export async function downAppFromUrl(url) {
   // try to cache

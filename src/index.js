@@ -11,6 +11,7 @@ import {
   installApp,
   createDevice,
   isURL,
+  isScheme,
   chalkError,
   chalkInfo,
 } from './util';
@@ -18,7 +19,7 @@ import {
 export * as simUtil from './util';
 
 export function open(udid, identifier) {
-  if (isURL(identifier)) return openUrl(udid, identifier);
+  if (isURL(identifier) || isScheme(identifier)) return openUrl(udid, identifier);
 
   return launch(udid, identifier, 5);
 }
