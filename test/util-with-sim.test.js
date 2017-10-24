@@ -1,6 +1,10 @@
+import { join } from 'path';
+
 import test from 'ava';
-import getAppPath from 'sample-apps';
+
 import start, { simUtil } from '../src/index';
+
+const testAppPath = join(__dirname, 'app/test.app');
 
 const simOpts = {
   udid: '',
@@ -11,10 +15,11 @@ test.after(async () => {
   await simUtil.deleteDevice(simOpts.udid);
 });
 
-test('node-isimulator - util with sim', async () => {
+test.serial('node-isimulator - util with sim', async (t) => {
   simOpts.udid = await start({
-    application: 'TestApp',
-    scheme: 'io.appium.TestApp',
-    downloadURL: getAppPath('TestApp'),
+    application: 'test',
+    scheme: 'pigcan.test',
+    downloadURL: testAppPath,
   });
+  t.true(true);
 });

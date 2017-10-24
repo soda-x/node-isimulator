@@ -1,6 +1,10 @@
+import { join } from 'path';
+
 import test from 'ava';
-import getAppPath from 'sample-apps';
+
 import { simUtil } from '../src/index';
+
+const testAppPath = join(__dirname, 'app/test.app');
 
 const simOpts = {
   sdk: '',
@@ -9,7 +13,6 @@ const simOpts = {
 };
 
 test.before(async () => {
-  await simUtil.killAllSimulators();
   simOpts.sdk = await simUtil.getLatestSDK();
   simOpts.udid = await simUtil.createDevice('test_node_isimulator', 'iPhone 6', simOpts.sdk);
   simOpts.sim = await simUtil.getSimulator(simOpts.udid);
@@ -35,14 +38,13 @@ test.serial('util - getBootedDeviceString - should get expect object', async (t)
 });
 
 test.serial('util - isInstalledAppNamed - should return false', async (t) => {
-  const is = await simUtil.isInstalledAppNamed(simOpts.udid, 'io.appium.TestApp');
+  const is = await simUtil.isInstalledAppNamed(simOpts.udid, 'pigcan.test');
   t.false(is);
 });
 
 test.serial('util - isInstalledAppNamed - should return true', async (t) => {
-  console.log('!!!!', simOpts.udid,getAppPath('TestApp'));
-  await simUtil.installApp(simOpts.udid, getAppPath('TestApp'));
-  const is = await simUtil.isInstalledAppNamed(simOpts.udid, 'io.appium.TestApp');
+  await simUtil.installApp(simOpts.udid, testAppPath);
+  const is = await simUtil.isInstalledAppNamed(simOpts.udid, 'pigcan.test');
   t.true(is);
 });
 

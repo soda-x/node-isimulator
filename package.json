@@ -14,7 +14,7 @@
     "files": [
       "test/**/*.test.js"
     ],
-    "concurrency": 5,
+    "concurrency": 1,
     "require": "babel-register",
     "babel": "inherit"
   },
@@ -57,8 +57,7 @@
     "eslint-config-airbnb": "^16.1.0",
     "expect.js": "^0.3.1",
     "nyc": "^11.2.1",
-    "rimraf": "^2.5.2",
-    "sample-apps": "^2.0.4"
+    "rimraf": "^2.5.2"
   },
   "files": [
     "lib",
