@@ -1,6 +1,6 @@
 {
   "name": "node-isimulator",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "use node.js to control iOS simulator",
   "main": "./lib/index.js",
   "scripts": {

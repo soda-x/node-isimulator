@@ -2,6 +2,11 @@
 
 ---
 
+## 1.1.0
+
+- upgrade all deps
+- refactor: test 
+
 ## 1.0.4
 
 - enhancement: sheme
