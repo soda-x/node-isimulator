@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/pigcan/node-isimulator",
   "dependencies": {
-    "appium-ios-simulator": "^2.5.0",
+    "appium-ios-simulator": "^2.9.0",
     "async": "^2.0.0-rc.6",
     "babel-runtime": "^6.9.2",
     "bplist-parser": "^0.1.1",
