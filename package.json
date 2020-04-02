@@ -38,7 +38,7 @@
     "async": "^2.0.0-rc.6",
     "babel-runtime": "^6.9.2",
     "bplist-parser": "^0.1.1",
-    "chalk": "^2.2.2",
+    "chalk": "^4.0.0",
     "download": "^6.2.5",
     "node-simctl": "^3.4.2",
     "sync-exec": "^0.6.2"
